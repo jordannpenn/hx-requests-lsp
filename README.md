@@ -1,6 +1,6 @@
 # hx-requests-lsp
 
-Language Server Protocol implementation for the [hx-requests](https://github.com/yaakovLowworworthy/hx-requests) Django library.
+Language Server Protocol implementation for the [hx-requests](https://github.com/yaakovLowenstein/hx-requests) Django library.
 
 ## Features
 
@@ -28,9 +28,17 @@ hx-requests-lsp --help
 
 ### VS Code Setup
 
-1. Install the [hx-requests-lsp VS Code extension](https://github.com/jordannpenn/hx-requests-lsp-vscode)
-2. The extension will automatically find the Python server once installed
-3. Open a Django template file to start using LSP features
+The easiest way to use this LSP is through the VS Code extension, which bundles the server:
+
+1. Install the [hx-requests-lsp VS Code extension](https://marketplace.visualstudio.com/items?itemName=jordannpenn.hx-requests-lsp) from the Marketplace
+2. The extension includes a bundled copy of the server - no separate installation needed
+3. Open a Django project with hx-requests to start using LSP features
+
+Alternatively, if you want to use your own installation of the server:
+
+1. Install this package: `pip install hx-requests-lsp`
+2. Install the [VS Code extension](https://marketplace.visualstudio.com/items?itemName=jordannpenn.hx-requests-lsp)
+3. The extension will automatically detect the server in your environment
 
 ### Configuration
 
@@ -87,12 +95,39 @@ class MyRequest(BaseHxRequest):
 - `pygls` >= 1.3.0 (Python Language Server library)
 - `lsprotocol` >= 2023.0.0
 
+## Editor Support
+
+### VS Code
+Use the [official extension](https://marketplace.visualstudio.com/items?itemName=jordannpenn.hx-requests-lsp) (recommended - includes bundled server)
+
+### Other Editors (Neovim, Emacs, etc.)
+This LSP server works with any editor that supports the Language Server Protocol. Install via pip and configure your editor to use the `hx-requests-lsp` command.
+
+Example for Neovim with `nvim-lspconfig`:
+```lua
+require'lspconfig'.hx_requests_lsp.setup{
+  cmd = {"hx-requests-lsp", "--stdio"},
+  filetypes = {"html", "htmldjango", "python"},
+  root_dir = require'lspconfig'.util.root_pattern("manage.py", ".git")
+}
+```
+
 ## Development
+
+### Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/jordannpenn/hx-requests-lsp
+cd hx-requests-lsp
+
+# Install dependencies
+pip install -e ".[dev]"
+```
 
 ### Running Tests
 
 ```bash
-pip install pytest pytest-asyncio
 pytest
 ```
 
