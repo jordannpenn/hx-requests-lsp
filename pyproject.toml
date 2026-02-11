@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "hx-requests-lsp"
-version = "0.1.1"
+version = "1.0.0"
 description = "Language Server Protocol implementation for hx-requests Django library"
 authors = ["Jordan Penn"]
 license = "MIT"
