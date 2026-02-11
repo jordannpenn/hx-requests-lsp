@@ -70,8 +70,12 @@ class HxRequestVisitor(ast.NodeVisitor):
         base_class_names = self._get_base_class_names(node)
 
         # Check if any base class is a known HxRequest class
+        # Patterns: ends with "HxRequest", "HxMixin", or just "Hx" (common convention)
         is_hx_request = any(
-            base in HX_REQUEST_BASE_CLASSES or base.endswith("HxRequest") or base.endswith("HxMixin")
+            base in HX_REQUEST_BASE_CLASSES
+            or base.endswith("HxRequest")
+            or base.endswith("HxMixin")
+            or base.endswith("Hx")
             for base in base_class_names
         )
 

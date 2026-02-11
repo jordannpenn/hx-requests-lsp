@@ -395,20 +395,27 @@ def _compute_diagnostics(
 
 def _is_in_hx_request_context(line: str, column: int) -> bool:
     """Check if the cursor position is in a context where hx_request completion is relevant."""
-    # Look for patterns like:
-    # {% hx_post '
-    # {% hx_get '
-    # {% hx_request '
-    # hx_request_name='
-
     prefix = line[:column]
 
-    patterns = [
+    # Pattern 1: Right after tag, possibly with opening quote (no content yet)
+    # {% hx_post ' or {% hx_post " or {% hx_post (space only)
+    after_tag_patterns = [
         r"\{%\s*(hx_post|hx_get|hx_request)\s+['\"]?$",
         r"hx_request_name\s*=\s*['\"]?$",
     ]
 
-    for pattern in patterns:
+    for pattern in after_tag_patterns:
+        if re.search(pattern, prefix):
+            return True
+
+    # Pattern 2: Inside a quoted string (cursor between quotes or typing partial name)
+    # {% hx_post "some_na or {% hx_post 'partial
+    inside_quotes_patterns = [
+        r"\{%\s*(hx_post|hx_get|hx_request)\s+(['\"])([^'\"]*?)$",
+        r"hx_request_name\s*=\s*(['\"])([^'\"]*?)$",
+    ]
+
+    for pattern in inside_quotes_patterns:
         if re.search(pattern, prefix):
             return True
 
