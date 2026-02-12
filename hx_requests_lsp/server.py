@@ -140,33 +140,35 @@ def completions(ls: HxRequestsLanguageServer, params: lsp.CompletionParams) -> l
     if not is_in_context:
         return None
 
-    # Build completion items from all known definitions
+    # Get definitions sorted by relevance (same app first, then alphabetical)
+    sorted_definitions = ls.index.get_definitions_sorted_by_relevance(file_path)
+
+    # Build completion items
     items = []
-    for name in ls.index.get_all_definition_names():
-        definition = ls.index.get_definition(name)
-        if definition:
-            doc_string = definition.docstring or ""
-            detail = f"Class: {definition.class_name}"
-            if definition.get_template:
-                detail += f"\nTemplate: {definition.get_template}"
+    for i, definition in enumerate(sorted_definitions):
+        doc_string = definition.docstring or ""
+        detail = f"Class: {definition.class_name}"
+        if definition.get_template:
+            detail += f"\nTemplate: {definition.get_template}"
 
-            insert_text = f'"{name}"' if needs_quotes else name
+        insert_text = f'"{definition.name}"' if needs_quotes else definition.name
 
-            items.append(
-                lsp.CompletionItem(
-                    label=name,
-                    kind=lsp.CompletionItemKind.Reference,
-                    detail=detail,
-                    documentation=lsp.MarkupContent(
-                        kind=lsp.MarkupKind.Markdown,
-                        value=f"**{definition.class_name}**\n\n"
-                        f"File: `{Path(definition.file_path).name}`\n\n"
-                        f"Bases: {', '.join(definition.base_classes)}\n\n"
-                        f"{doc_string}",
-                    ),
-                    insert_text=insert_text,
-                )
+        items.append(
+            lsp.CompletionItem(
+                label=definition.name,
+                kind=lsp.CompletionItemKind.Reference,
+                detail=detail,
+                documentation=lsp.MarkupContent(
+                    kind=lsp.MarkupKind.Markdown,
+                    value=f"**{definition.class_name}**\n\n"
+                    f"File: `{Path(definition.file_path).name}`\n\n"
+                    f"Bases: {', '.join(definition.base_classes)}\n\n"
+                    f"{doc_string}",
+                ),
+                insert_text=insert_text,
+                sort_text=f"{i:04d}",
             )
+        )
 
     return lsp.CompletionList(is_incomplete=False, items=items)
 
