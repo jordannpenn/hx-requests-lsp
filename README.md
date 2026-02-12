@@ -4,7 +4,7 @@ Language Server Protocol implementation for the [hx-requests](https://github.com
 
 ## Features
 
-- **Autocomplete**: Get suggestions for hx_request names in Django templates
+- **Autocomplete**: Get suggestions for hx_request names in Django templates (prioritizes current app, works with or without quotes)
 - **Go-to-Definition**: Jump from template usage to the Python class definition
 - **Find References**: Find all template usages of an hx_request
 - **Diagnostics**: Warnings for undefined hx_request names
@@ -59,7 +59,7 @@ Once installed, the LSP provides these features in your editor:
 | **Go to Definition** | `F12` or `Ctrl+Click` on an hx_request name in a template |
 | **Find References** | `Shift+F12` or right-click → "Find All References" |
 | **Hover Info** | Hover over an hx_request name |
-| **Autocomplete** | Type `{% hx_get '` or `{% hx_post '` in a template |
+| **Autocomplete** | Type `{% hx_get ` or `{% hx_post ` in a template (quotes optional) |
 | **Diagnostics** | Undefined hx_request names show warnings |
 
 ## Supported Patterns
