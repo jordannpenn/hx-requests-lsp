@@ -136,7 +136,8 @@ def completions(ls: HxRequestsLanguageServer, params: lsp.CompletionParams) -> l
     line = doc.lines[params.position.line] if params.position.line < len(doc.lines) else ""
 
     # Check if we're in an hx_request context
-    if not _is_in_hx_request_context(line, params.position.character):
+    is_in_context, needs_quotes = _is_in_hx_request_context(line, params.position.character)
+    if not is_in_context:
         return None
 
     # Build completion items from all known definitions
@@ -148,6 +149,8 @@ def completions(ls: HxRequestsLanguageServer, params: lsp.CompletionParams) -> l
             detail = f"Class: {definition.class_name}"
             if definition.get_template:
                 detail += f"\nTemplate: {definition.get_template}"
+
+            insert_text = f'"{name}"' if needs_quotes else name
 
             items.append(
                 lsp.CompletionItem(
@@ -161,7 +164,7 @@ def completions(ls: HxRequestsLanguageServer, params: lsp.CompletionParams) -> l
                         f"Bases: {', '.join(definition.base_classes)}\n\n"
                         f"{doc_string}",
                     ),
-                    insert_text=name,
+                    insert_text=insert_text,
                 )
             )
 
@@ -393,22 +396,43 @@ def _compute_diagnostics(
     return diagnostics
 
 
-def _is_in_hx_request_context(line: str, column: int) -> bool:
-    """Check if the cursor position is in a context where hx_request completion is relevant."""
-    prefix = line[:column]
+def _is_in_hx_request_context(line: str, column: int) -> tuple[bool, bool]:
+    """Check if the cursor position is in a context where hx_request completion is relevant.
 
-    # Pattern 1: Right after tag, possibly with opening quote (no content yet)
-    # {% hx_post ' or {% hx_post " or {% hx_post (space only)
-    after_tag_patterns = [
-        r"\{%\s*(hx_post|hx_get|hx_request)\s+['\"]?$",
-        r"hx_request_name\s*=\s*['\"]?$",
+    Returns:
+        Tuple of (is_in_context, needs_quotes)
+        - is_in_context: True if completion should be offered
+        - needs_quotes: True if the inserted text should include quotes
+    """
+    prefix = line[:column]
+    suffix = line[column:]
+
+    # Pattern 1: Right after tag with NO quote - needs quotes in completion
+    # {% hx_post  or {% hx_post partial_name
+    no_quote_patterns = [
+        r"\{%\s*(hx_post|hx_get|hx_request)\s+([a-zA-Z_][a-zA-Z0-9_]*)?$",
     ]
 
-    for pattern in after_tag_patterns:
-        if re.search(pattern, prefix):
-            return True
+    for pattern in no_quote_patterns:
+        match = re.search(pattern, prefix)
+        if match:
+            # Check this isn't inside quotes by looking at full context
+            full_tag_prefix = prefix[match.start() :]
+            if "'" not in full_tag_prefix and '"' not in full_tag_prefix:
+                return (True, True)
 
-    # Pattern 2: Inside a quoted string (cursor between quotes or typing partial name)
+    # Pattern 2: Right after tag with opening quote (no content yet)
+    # {% hx_post ' or {% hx_post "
+    after_quote_patterns = [
+        r"\{%\s*(hx_post|hx_get|hx_request)\s+['\"]$",
+        r"hx_request_name\s*=\s*['\"]$",
+    ]
+
+    for pattern in after_quote_patterns:
+        if re.search(pattern, prefix):
+            return (True, False)
+
+    # Pattern 3: Inside a quoted string (cursor between quotes or typing partial name)
     # {% hx_post "some_na or {% hx_post 'partial
     inside_quotes_patterns = [
         r"\{%\s*(hx_post|hx_get|hx_request)\s+(['\"])([^'\"]*?)$",
@@ -417,9 +441,14 @@ def _is_in_hx_request_context(line: str, column: int) -> bool:
 
     for pattern in inside_quotes_patterns:
         if re.search(pattern, prefix):
-            return True
+            return (True, False)
 
-    return False
+    # Pattern 4: hx_request_name= with no quote yet
+    if re.search(r"hx_request_name\s*=\s*([a-zA-Z_][a-zA-Z0-9_]*)?$", prefix):
+        if "'" not in prefix.split("=")[-1] and '"' not in prefix.split("=")[-1]:
+            return (True, True)
+
+    return (False, False)
 
 
 def _get_hx_name_from_python_line(line: str, column: int) -> str | None:
