@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.1.1 (2026-02-12)
+
+### Bug Fixes
+
+- Update README with new autocomplete features
+  ([`1a92234`](https://github.com/jordannpenn/hx-requests-lsp/commit/1a92234b8e034b2a4955a9e1aa933862484170f5))
+
+
 ## v1.1.0 (2026-02-12)
 
 ### Bug Fixes
