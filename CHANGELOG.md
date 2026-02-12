@@ -2,6 +2,24 @@
 
 <!-- version list -->
 
+## v1.1.0 (2026-02-12)
+
+### Bug Fixes
+
+- **ci**: Use version comparison instead of git diff to detect releases
+  ([`3644162`](https://github.com/jordannpenn/hx-requests-lsp/commit/364416268596221f88bbbe1e26e43715a1df21af))
+
+### Continuous Integration
+
+- Consolidate release workflow to handle PyPI publish and extension trigger
+  ([`ad2f4e7`](https://github.com/jordannpenn/hx-requests-lsp/commit/ad2f4e7e5125503a563dadd343f38dbb99fd5d71))
+
+### Features
+
+- Prioritize current app's hx_requests in autocomplete suggestions
+  ([`ae1ab8d`](https://github.com/jordannpenn/hx-requests-lsp/commit/ae1ab8d3c7f730e46e39e7e8decfe824e4d1f808))
+
+
 ## v1.0.1 (2026-02-12)
 
 ### Bug Fixes
