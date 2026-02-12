@@ -24,11 +24,41 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install python-semantic-release
+        run: pip install python-semantic-release build
 
       - name: Semantic Release
+        id: release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          semantic-release version
-          semantic-release publish
+          semantic-release version --no-push
+          if [ -f "pyproject.toml" ] && git diff --quiet pyproject.toml; then
+            echo "released=false" >> $GITHUB_OUTPUT
+          else
+            echo "released=true" >> $GITHUB_OUTPUT
+            git push
+            git push --tags
+            semantic-release publish
+          fi
+
+      - name: Build package
+        if: steps.release.outputs.released == 'true'
+        run: python -m build
+
+      - name: Publish to PyPI
+        if: steps.release.outputs.released == 'true'
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+      - name: Trigger extension rebuild
+        if: steps.release.outputs.released == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.EXTENSION_REPO_TOKEN }}
+        run: |
+          if [ -n "$GH_TOKEN" ]; then
+            VERSION=$(grep '^version' pyproject.toml | head -1 | cut -d'"' -f2)
+            curl -X POST \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              https://api.github.com/repos/jordannpenn/hx-requests-lsp-vscode-extension/dispatches \
+              -d "{\"event_type\":\"lsp-release\",\"client_payload\":{\"version\":\"$VERSION\"}}"
+          fi
