@@ -24,21 +24,11 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: |
-          pip install python-semantic-release build
+        run: pip install python-semantic-release
 
       - name: Semantic Release
-        id: release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           semantic-release version
           semantic-release publish
-
-      - name: Build package
-        if: steps.release.outcome == 'success'
-        run: python -m build
-
-      - name: Publish to PyPI
-        if: steps.release.outcome == 'success'
-        uses: pypa/gh-action-pypi-publish@release/v1
