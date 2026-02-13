@@ -2,6 +2,9 @@
 
 Language Server Protocol implementation for the [hx-requests](https://github.com/yaakovLowenstein/hx-requests) Django library.
 
+[![VS Code Extension](https://img.shields.io/visual-studio-marketplace/v/jordannpenn.hx-requests-lsp?label=VS%20Code%20Extension)](https://marketplace.visualstudio.com/items?itemName=jordannpenn.hx-requests-lsp)
+[![PyPI](https://img.shields.io/pypi/v/hx-requests-lsp)](https://pypi.org/project/hx-requests-lsp/)
+
 ## Features
 
 - **Autocomplete**: Get suggestions for hx_request names in Django templates (prioritizes current app, works with or without quotes)
@@ -12,41 +15,26 @@ Language Server Protocol implementation for the [hx-requests](https://github.com
 
 ## Installation
 
-Install via pip:
+### VS Code (Recommended)
+
+Install the [hx-requests-lsp extension](https://marketplace.visualstudio.com/items?itemName=jordannpenn.hx-requests-lsp) from the VS Code Marketplace. The extension bundles the language server - no additional setup required.
+
+### Other Editors
+
+Install the language server via pip:
 
 ```bash
 pip install hx-requests-lsp
 ```
 
-Verify installation:
+Then configure your editor to use `hx-requests-lsp --stdio`.
 
-```bash
-hx-requests-lsp --help
-```
-
-## Quick Start
-
-### VS Code Setup
-
-The easiest way to use this LSP is through the VS Code extension, which bundles the server:
-
-1. Install the [hx-requests-lsp VS Code extension](https://marketplace.visualstudio.com/items?itemName=jordannpenn.hx-requests-lsp) from the Marketplace
-2. The extension includes a bundled copy of the server - no separate installation needed
-3. Open a Django project with hx-requests to start using LSP features
-
-Alternatively, if you want to use your own installation of the server:
-
-1. Install this package: `pip install hx-requests-lsp`
-2. Install the [VS Code extension](https://marketplace.visualstudio.com/items?itemName=jordannpenn.hx-requests-lsp)
-3. The extension will automatically detect the server in your environment
-
-### Configuration
-
-If the extension can't find the server automatically, add to your VS Code `.vscode/settings.json`:
-
-```json
-{
-  "hxRequestsLsp.serverPath": "/path/to/venv/bin/hx-requests-lsp"
+Example for Neovim with `nvim-lspconfig`:
+```lua
+require'lspconfig'.hx_requests_lsp.setup{
+  cmd = {"hx-requests-lsp", "--stdio"},
+  filetypes = {"html", "htmldjango", "python"},
+  root_dir = require'lspconfig'.util.root_pattern("manage.py", ".git")
 }
 ```
 
@@ -54,13 +42,13 @@ If the extension can't find the server automatically, add to your VS Code `.vsco
 
 Once installed, the LSP provides these features in your editor:
 
-| Feature | How to Use |
-|---------|------------|
-| **Go to Definition** | `F12` or `Ctrl+Click` on an hx_request name in a template |
-| **Find References** | `Shift+F12` or right-click → "Find All References" |
-| **Hover Info** | Hover over an hx_request name |
-| **Autocomplete** | Type `{% hx_get ` or `{% hx_post ` in a template (quotes optional) |
-| **Diagnostics** | Undefined hx_request names show warnings |
+| Feature | Description |
+|---------|-------------|
+| **Go to Definition** | Jump to hx_request class from template usage |
+| **Find References** | Find all template usages of an hx_request |
+| **Hover Info** | View details about an hx_request on hover |
+| **Autocomplete** | Get suggestions when typing `{% hx_get ` or `{% hx_post ` |
+| **Diagnostics** | Warnings for undefined hx_request names |
 
 ## Supported Patterns
 
@@ -92,65 +80,13 @@ class MyRequest(BaseHxRequest):
 ## Requirements
 
 - Python 3.11+
-- `pygls` >= 1.3.0 (Python Language Server library)
-- `lsprotocol` >= 2023.0.0
-
-## Editor Support
-
-### VS Code
-Use the [official extension](https://marketplace.visualstudio.com/items?itemName=jordannpenn.hx-requests-lsp) (recommended - includes bundled server)
-
-### Other Editors (Neovim, Emacs, etc.)
-This LSP server works with any editor that supports the Language Server Protocol. Install via pip and configure your editor to use the `hx-requests-lsp` command.
-
-Example for Neovim with `nvim-lspconfig`:
-```lua
-require'lspconfig'.hx_requests_lsp.setup{
-  cmd = {"hx-requests-lsp", "--stdio"},
-  filetypes = {"html", "htmldjango", "python"},
-  root_dir = require'lspconfig'.util.root_pattern("manage.py", ".git")
-}
-```
-
-## Development
-
-### Setup
-
-```bash
-# Clone the repository
-git clone https://github.com/jordannpenn/hx-requests-lsp
-cd hx-requests-lsp
-
-# Install dependencies
-pip install -e ".[dev]"
-```
-
-### Running Tests
-
-```bash
-pytest
-```
-
-### Testing the Server Manually
-
-```bash
-# Test that the server responds to LSP initialize
-msg='{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"processId":null,"rootUri":"file:///app","capabilities":{}}}'
-printf "Content-Length: ${#msg}\r\n\r\n${msg}" | hx-requests-lsp --stdio
-```
 
 ## Troubleshooting
 
 ### Server not found
 
 1. Verify it's installed: `which hx-requests-lsp`
-2. Check the path matches your editor's `serverPath` setting
-3. Make sure you're in the correct virtualenv
-
-### Extension shows "Activating" forever
-
-1. Check Developer Tools console: `Ctrl+Shift+P` → "Developer: Toggle Developer Tools" → Console tab
-2. Look for errors mentioning "hx-requests"
+2. Make sure you're in the correct virtualenv
 
 ### No autocompletion or diagnostics
 
@@ -164,4 +100,4 @@ MIT License - see [LICENSE](LICENSE) file for details
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup instructions.

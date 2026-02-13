@@ -34,19 +34,6 @@ class HxRequestDefinition:
         )
 
 
-# Known HxRequest base classes from hx-requests library
-HX_REQUEST_BASE_CLASSES = {
-    "BaseHxRequest",
-    "ModalHxRequest",
-    "FormHxRequest",
-    "FormModalHxRequest",
-    "DeleteHxRequest",
-    "BaseTabsRouter",
-    # Common mixins that indicate hx-request classes
-    "TriggerRowRefreshMixin",
-}
-
-
 class HxRequestVisitor(ast.NodeVisitor):
     """AST visitor that finds HxRequest class definitions."""
 
@@ -69,13 +56,11 @@ class HxRequestVisitor(ast.NodeVisitor):
         """Visit class definitions and check if they are HxRequest subclasses."""
         base_class_names = self._get_base_class_names(node)
 
-        # Check if any base class is a known HxRequest class
-        # Patterns: ends with "HxRequest", "HxMixin", or just "Hx" (common convention)
         is_hx_request = any(
-            base in HX_REQUEST_BASE_CLASSES
-            or base.endswith("HxRequest")
+            base.endswith("HxRequest")
             or base.endswith("HxMixin")
             or base.endswith("Hx")
+            or base.endswith("TabsRouter")
             for base in base_class_names
         )
 
