@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.1.2 (2026-02-13)
+
+### Bug Fixes
+
+- Read version from package metadata instead of hardcoding
+  ([`85b31cc`](https://github.com/jordannpenn/hx-requests-lsp/commit/85b31cc1f23f8c473e458b4a124c0e51a8feb2bc))
+
+
 ## v1.1.1 (2026-02-12)
 
 ### Bug Fixes
