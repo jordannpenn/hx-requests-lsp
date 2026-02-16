@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.2.1 (2026-02-16)
+
+### Bug Fixes
+
+- Resolve base classes from any installed package
+  ([`4ab803f`](https://github.com/jordannpenn/hx-requests-lsp/commit/4ab803f631a679ae9eec1467bb8a33156b19c839))
+
+
 ## v1.2.0 (2026-02-16)
 
 ### Documentation
