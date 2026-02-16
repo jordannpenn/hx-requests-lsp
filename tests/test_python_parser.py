@@ -3,6 +3,7 @@
 import pytest
 
 from hx_requests_lsp.python_parser import (
+    BaseClassInfo,
     HxRequestDefinition,
     parse_hx_requests_from_source,
 )
@@ -185,3 +186,39 @@ class RefreshableRequest(TriggerRowRefreshMixin, BaseHxRequest):
         assert definitions[0].name == "refreshable"
         assert "TriggerRowRefreshMixin" in definitions[0].base_classes
         assert "BaseHxRequest" in definitions[0].base_classes
+
+    def test_base_class_info_populated(self):
+        """Should populate base_class_info for each base class."""
+        source = """
+from hx_requests.hx_requests import BaseHxRequest
+
+class MyRequest(BaseHxRequest):
+    name = "my_request"
+"""
+        definitions = parse_hx_requests_from_source(source)
+
+        assert len(definitions) == 1
+        assert len(definitions[0].base_class_info) == 1
+        assert definitions[0].base_class_info[0].name == "BaseHxRequest"
+
+    def test_base_class_info_same_file(self, tmp_path):
+        """Should resolve base classes defined in the same file."""
+        source = """
+class LocalBaseHxRequest:
+    pass
+
+class LocalHxRequest(LocalBaseHxRequest):
+    name = "local_request"
+"""
+        test_file = tmp_path / "hx_requests.py"
+        test_file.write_text(source)
+
+        from hx_requests_lsp.python_parser import parse_hx_requests_from_file
+
+        definitions = parse_hx_requests_from_file(test_file)
+
+        assert len(definitions) == 1
+        base_info = definitions[0].base_class_info[0]
+        assert base_info.name == "LocalBaseHxRequest"
+        assert base_info.file_path == str(test_file.resolve())
+        assert base_info.line_number == 2

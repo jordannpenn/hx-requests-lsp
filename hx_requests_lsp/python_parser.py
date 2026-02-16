@@ -7,6 +7,23 @@ from pathlib import Path
 
 
 @dataclass
+class BaseClassInfo:
+    """Information about a base class including its location."""
+
+    name: str  # Class name (e.g., "BaseHxRequest")
+    file_path: str | None  # Absolute path to the file where it's defined
+    line_number: int | None  # Line number where it's defined (1-based)
+
+    def __hash__(self):
+        return hash(self.name)
+
+    def __eq__(self, other):
+        if not isinstance(other, BaseClassInfo):
+            return False
+        return self.name == other.name
+
+
+@dataclass
 class HxRequestDefinition:
     """Represents an HxRequest class definition found in Python code."""
 
@@ -17,6 +34,7 @@ class HxRequestDefinition:
     end_line_number: int  # Line where the class ends (1-based)
     column: int  # Column where the class name starts (0-based)
     base_classes: list[str]  # List of base class names
+    base_class_info: list[BaseClassInfo]  # Detailed info about base classes with locations
     docstring: str | None  # Class docstring if present
     get_template: str | None  # Value of GET_template attribute if present
     post_template: str | None  # Value of POST_template attribute if present
@@ -45,12 +63,17 @@ class HxRequestVisitor(ast.NodeVisitor):
         self._imports: dict[str, str] = {}  # Maps imported names to their sources
 
     def visit_ImportFrom(self, node: ast.ImportFrom):
-        """Track imports to identify HxRequest base classes."""
-        if node.module and "hx_request" in node.module.lower():
+        """Track imports for base class resolution."""
+        if node.module:
             for alias in node.names:
                 name = alias.asname if alias.asname else alias.name
                 self._imports[name] = node.module
         self.generic_visit(node)
+
+    @property
+    def imports(self) -> dict[str, str]:
+        """Return the collected imports mapping class names to modules."""
+        return self._imports
 
     def visit_ClassDef(self, node: ast.ClassDef):
         """Visit class definitions and check if they are HxRequest subclasses."""
@@ -75,6 +98,7 @@ class HxRequestVisitor(ast.NodeVisitor):
                     end_line_number=node.end_lineno or node.lineno,
                     column=node.col_offset,
                     base_classes=base_class_names,
+                    base_class_info=[],  # Populated later by resolver
                     docstring=ast.get_docstring(node),
                     get_template=self._extract_string_attribute(node, "GET_template"),
                     post_template=self._extract_string_attribute(node, "POST_template"),
@@ -136,15 +160,20 @@ class HxRequestVisitor(ast.NodeVisitor):
         return None
 
 
-def parse_hx_requests_from_file(file_path: str | Path) -> list[HxRequestDefinition]:
+def parse_hx_requests_from_file(
+    file_path: str | Path, workspace_root: str | Path | None = None
+) -> list[HxRequestDefinition]:
     """Parse a Python file and extract all HxRequest class definitions.
 
     Args:
         file_path: Path to the Python file to parse
+        workspace_root: Root of workspace for resolving local imports
 
     Returns:
         List of HxRequestDefinition objects found in the file
     """
+    from hx_requests_lsp.base_class_resolver import resolve_all_base_classes
+
     file_path = Path(file_path)
     if not file_path.exists():
         return []
@@ -157,19 +186,34 @@ def parse_hx_requests_from_file(file_path: str | Path) -> list[HxRequestDefiniti
 
     visitor = HxRequestVisitor(str(file_path.resolve()), source)
     visitor.visit(tree)
+
+    workspace_root_str = str(workspace_root) if workspace_root else None
+    for definition in visitor.definitions:
+        definition.base_class_info = resolve_all_base_classes(
+            definition.base_classes,
+            definition.file_path,
+            visitor.imports,
+            workspace_root_str,
+        )
+
     return visitor.definitions
 
 
-def parse_hx_requests_from_source(source: str, file_path: str = "<string>") -> list[HxRequestDefinition]:
+def parse_hx_requests_from_source(
+    source: str, file_path: str = "<string>", workspace_root: str | Path | None = None
+) -> list[HxRequestDefinition]:
     """Parse Python source code and extract all HxRequest class definitions.
 
     Args:
         source: Python source code as a string
         file_path: Virtual file path for error messages
+        workspace_root: Root of workspace for resolving local imports
 
     Returns:
         List of HxRequestDefinition objects found in the source
     """
+    from hx_requests_lsp.base_class_resolver import resolve_all_base_classes
+
     try:
         tree = ast.parse(source, filename=file_path)
     except SyntaxError:
@@ -177,6 +221,16 @@ def parse_hx_requests_from_source(source: str, file_path: str = "<string>") -> l
 
     visitor = HxRequestVisitor(file_path, source)
     visitor.visit(tree)
+
+    workspace_root_str = str(workspace_root) if workspace_root else None
+    for definition in visitor.definitions:
+        definition.base_class_info = resolve_all_base_classes(
+            definition.base_classes,
+            definition.file_path,
+            visitor.imports,
+            workspace_root_str,
+        )
+
     return visitor.definitions
 
 
