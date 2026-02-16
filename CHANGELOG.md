@@ -2,6 +2,22 @@
 
 <!-- version list -->
 
+## v1.2.0 (2026-02-16)
+
+### Documentation
+
+- Improve Neovim configuration examples
+  ([`5d4eb2c`](https://github.com/jordannpenn/hx-requests-lsp/commit/5d4eb2cd407156c55cb3a0e46e2d831a8d3a6930))
+
+- Streamline README and move dev docs to CONTRIBUTING.md
+  ([`276be88`](https://github.com/jordannpenn/hx-requests-lsp/commit/276be8872637fc2c8db1044f738bd0fb18cd6b93))
+
+### Features
+
+- Add clickable base class links in hover
+  ([`5c8605a`](https://github.com/jordannpenn/hx-requests-lsp/commit/5c8605a3cbafb5ce5a2a0481ffed072fe7ad1587))
+
+
 ## v1.1.2 (2026-02-13)
 
 ### Bug Fixes
