@@ -21,22 +21,64 @@ Install the [hx-requests-lsp extension](https://marketplace.visualstudio.com/ite
 
 ### Other Editors
 
-Install the language server via pip:
+Install the language server via pip/pipx:
 
 ```bash
 pip install hx-requests-lsp
+# or
+pipx install hx-requests-lsp
 ```
 
-Then configure your editor to use `hx-requests-lsp --stdio`.
+#### Neovim Configuration
 
-Example for Neovim with `nvim-lspconfig`:
+> **Note**: `hx-requests-lsp` is not yet in nvim-lspconfig's built-in server list, so you need to define it as a custom server.
+
+**Vanilla Neovim with nvim-lspconfig:**
+
 ```lua
-require'lspconfig'.hx_requests_lsp.setup{
-  cmd = {"hx-requests-lsp", "--stdio"},
-  filetypes = {"html", "htmldjango", "python"},
-  root_dir = require'lspconfig'.util.root_pattern("manage.py", ".git")
+-- Define the custom server first
+vim.lsp.config('hx_requests_lsp', {
+  cmd = { 'hx-requests-lsp', '--stdio' },
+  filetypes = { 'html', 'htmldjango', 'python' },
+  root_markers = { 'manage.py', '.git' },
+})
+
+-- Then enable it
+vim.lsp.enable('hx_requests_lsp')
+```
+
+**LazyVim:**
+
+Add this to your `lua/plugins/lspconfig.lua`:
+
+```lua
+return {
+  "neovim/nvim-lspconfig",
+  opts = function(_, opts)
+    -- Define the custom server
+    vim.lsp.config("hx_requests_lsp", {
+      cmd = { "hx-requests-lsp", "--stdio" },
+      filetypes = { "html", "htmldjango", "python" },
+      root_markers = { "manage.py", ".git" },
+    })
+
+    -- Add to server list
+    return vim.tbl_deep_extend("force", opts or {}, {
+      servers = {
+        hx_requests_lsp = {},
+      },
+    })
+  end,
 }
 ```
+
+**NvChad / LunarVim / AstroNvim:**
+
+Add the `vim.lsp.config()` definition to your configuration file before setting up lspconfig, then add `hx_requests_lsp = {}` to your servers list.
+
+#### Other Editors
+
+Configure your editor to use `hx-requests-lsp --stdio` as the language server command for `html`, `htmldjango`, and `python` filetypes in Django projects (detected by `manage.py` in the root directory).
 
 ## Usage
 
@@ -86,7 +128,8 @@ class MyRequest(BaseHxRequest):
 ### Server not found
 
 1. Verify it's installed: `which hx-requests-lsp`
-2. Make sure you're in the correct virtualenv
+2. Make sure you're in the correct virtualenv or used `pipx` for global install
+3. For Neovim, check if the LSP is running with `:LspInfo`
 
 ### No autocompletion or diagnostics
 
