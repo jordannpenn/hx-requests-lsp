@@ -2,6 +2,19 @@
 
 <!-- version list -->
 
+## v1.2.2 (2026-02-17)
+
+### Bug Fixes
+
+- Skip diagnostics for template variables (unquoted names)
+  ([`e247437`](https://github.com/jordannpenn/hx-requests-lsp/commit/e247437d715d53e0834e7ac31d05b16a40dfdcc4))
+
+### Documentation
+
+- Update VS Code extension publisher to jordanpenn
+  ([`db46156`](https://github.com/jordannpenn/hx-requests-lsp/commit/db46156761321febc2c3a605344cb42759694275))
+
+
 ## v1.2.1 (2026-02-16)
 
 ### Bug Fixes
