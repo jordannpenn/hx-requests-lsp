@@ -110,6 +110,39 @@ line 3
         # Variable references should be skipped
         assert len(usages) == 0
 
+    def test_marks_quoted_names_as_not_variable(self):
+        """Quoted names should have is_variable=False."""
+        content = "{% hx_post 'my_request' %}"
+        usages = parse_template_for_hx_requests(content)
+
+        assert len(usages) == 1
+        assert usages[0].is_variable is False
+
+    def test_marks_unquoted_names_as_variable(self):
+        """Unquoted names (template variables) should have is_variable=True."""
+        content = "{% hx_post task_hx_name object=item %}"
+        usages = parse_template_for_hx_requests(content)
+
+        assert len(usages) == 1
+        assert usages[0].name == "task_hx_name"
+        assert usages[0].is_variable is True
+
+    def test_hx_vals_quoted_is_not_variable(self):
+        """hx_vals with quoted name should have is_variable=False."""
+        content = "{% hx_vals hx_request_name='my_modal' %}"
+        usages = parse_template_for_hx_requests(content)
+
+        assert len(usages) == 1
+        assert usages[0].is_variable is False
+
+    def test_hx_vals_unquoted_is_variable(self):
+        """hx_vals with unquoted name should have is_variable=True."""
+        content = "{% hx_vals hx_request_name=dynamic_name %}"
+        usages = parse_template_for_hx_requests(content)
+
+        assert len(usages) == 1
+        assert usages[0].is_variable is True
+
     def test_complex_template(self):
         """Should parse a complex template with various tag types."""
         content = """
