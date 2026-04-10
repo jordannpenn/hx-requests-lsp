@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.2.3 (2026-04-10)
+
+### Bug Fixes
+
+- Remove duplicate push diagnostics causing doubled error messages
+  ([`96932c0`](https://github.com/jordannpenn/hx-requests-lsp/commit/96932c0dc6b08ccf1dcc8300f705d54415e3124b))
+
+
 ## v1.2.2 (2026-02-17)
 
 ### Bug Fixes
