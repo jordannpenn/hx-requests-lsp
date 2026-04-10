@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.2.4 (2026-04-10)
+
+### Bug Fixes
+
+- Disable inter_file_dependencies to prevent duplicate diagnostics
+  ([`fec3307`](https://github.com/jordannpenn/hx-requests-lsp/commit/fec33077dec9fb4126b86f6bb673b80356f9fac4))
+
+
 ## v1.2.3 (2026-04-10)
 
 ### Bug Fixes
